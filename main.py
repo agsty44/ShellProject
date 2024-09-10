@@ -19,6 +19,7 @@ echo = OOPcommand("echo", 2)
 quit = OOPcommand("quit", 1)
 make = OOPcommand("make", 2)
 cat = OOPcommand("cat", 2)
+cd = OOPcommand("cd", 3)
 
 # keep these handy
 #
@@ -77,6 +78,7 @@ def quitCMD():
 
 #this will make a file
 def makeCMD():
+    #validity check
     if len(splitCommand) < make.arguments:
         print("Syntax Error: command \"make\" must take 1 argument (filename)")
         return 1
@@ -87,13 +89,48 @@ def makeCMD():
 
 #dump file contents, this doesnt have any security so we pray to god it doesnt fuck up
 def catCMD():
+    #validity check
     if len(splitCommand) < cat.arguments:
         print("Syntax Error: command \"cat\" must take 1 argument (filename)")
         return 1
     
+    #dump the file contents (yippee!)
     f = open(splitCommand[1], "r")
     print(f.read())
     f.close()
+
+def cdCMD():
+    global filePath
+
+    #validity check
+    if len(splitCommand) < cd.arguments:
+        print("Syntax Error: command \"cat\" must take 2 arguments (path), (relative/absolute)")
+        return 1
+
+    #use cases to determine how to change the file path
+    if splitCommand[2] == "relative":
+
+        #this will check if the new directory is real
+        if not os.path.isdir(filePath + "/" + splitCommand[1]):
+            print("File path is invalid.")
+            return 1
+        
+        #if it exists, we can change the working directory to the new path
+        filePath = filePath + "/" + splitCommand[1]
+
+    elif splitCommand[2] == "absolute":
+
+        #same as before
+        if not os.path.isdir(splitCommand[1]):
+            print("File path is invalid.")
+            return 1
+        
+        filePath = splitCommand[1]
+
+    else:
+        print("File path must be defined as \"relative\" or \"absolute\".")
+        return 1
+
 
 #we will use this to call a function depending on the command
 def interpret():
@@ -111,6 +148,9 @@ def interpret():
 
     elif splitCommand[0] == cat.name:
         catCMD()
+
+    elif splitCommand[0] == cd.name:
+        cdCMD()
 
     else:
         print("Command not recognised.")
