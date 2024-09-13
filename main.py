@@ -6,9 +6,10 @@ splitCommand = []
 filePath = os.getcwd()
 displayedUserEnvironment = ""
 fileReference = ""
+subDirectories = []
 
 #we will use this to generate a bunch of commands just below the constructor
-#dont need to global these as they should never be edited as that would fuck the syntax
+#dont need to global these as they should never be edited as that would break the syntax
 class OOPcommand:
     def __init__(cmd, name, arguments):
         cmd.name = name
@@ -20,6 +21,7 @@ quit = OOPcommand("quit", 1)
 make = OOPcommand("make", 2)
 cat = OOPcommand("cat", 2)
 cd = OOPcommand("cd", 3)
+ls = OOPcommand("ls", 1)
 
 # keep these handy
 #
@@ -40,6 +42,7 @@ def getCommand():
     #this displays the last bit of code and gets the input of the user
     command = input(displayedUserEnvironment)
 
+
 #splits the input, now we can look at it bit by bit
 def parse():
     global command
@@ -55,8 +58,9 @@ def parse():
     except IndexError:
         fileReference = filePath
 
+
 #this command will let you print text!
-#its a bit fucking useless, but will be better when i add the scripting feature (linebyline)
+#its a bit useless, but will be better when i add the scripting feature (linebyline)
 def echoCMD():
     global command
     global splitCommand
@@ -72,9 +76,11 @@ def echoCMD():
     print(shellOut)
     return 0
 
-#this is a bit fucking obvious, no?
+
+#this is a bit obvious, no?
 def quitCMD():
     exit()
+
 
 #this will make a file
 def makeCMD():
@@ -82,29 +88,35 @@ def makeCMD():
     if len(splitCommand) < make.arguments:
         print("Syntax Error: command \"make\" must take 1 argument (filename)")
         return 1
-    
+
     #if its valid we make the file ig
     f = open(splitCommand[1], "w")
     f.close()
 
-#dump file contents, this doesnt have any security so we pray to god it doesnt fuck up
+
+#dump file contents, this doesnt have any security so we pray to god it doesnt screw up
 def catCMD():
     #validity check
     if len(splitCommand) < cat.arguments:
         print("Syntax Error: command \"cat\" must take 1 argument (filename)")
         return 1
-    
+
     #dump the file contents (yippee!)
+    if not os.path.isfile(splitCommand[1]):
+        print("File not found")
+        return 1
+
     f = open(splitCommand[1], "r")
     print(f.read())
     f.close()
+
 
 def cdCMD():
     global filePath
 
     #validity check
     if len(splitCommand) < cd.arguments:
-        print("Syntax Error: command \"cat\" must take 2 arguments (path), (relative/absolute)")
+        print("Syntax Error: command \"cd\" must take 2 arguments (path), (relative/absolute)")
         return 1
 
     #use cases to determine how to change the file path
@@ -114,7 +126,7 @@ def cdCMD():
         if not os.path.isdir(filePath + "/" + splitCommand[1]):
             print("File path is invalid.")
             return 1
-        
+
         #if it exists, we can change the working directory to the new path
         filePath = filePath + "/" + splitCommand[1]
 
@@ -124,13 +136,18 @@ def cdCMD():
         if not os.path.isdir(splitCommand[1]):
             print("File path is invalid.")
             return 1
-        
+
         filePath = splitCommand[1]
 
     else:
         print("File path must be defined as \"relative\" or \"absolute\".")
         return 1
 
+def lsCMD():
+    global subDirectories
+
+    subDirectories = os.listdir(filePath)
+    print((", ").join(subDirectories))
 
 #we will use this to call a function depending on the command
 def interpret():
@@ -151,6 +168,9 @@ def interpret():
 
     elif splitCommand[0] == cd.name:
         cdCMD()
+
+    elif splitCommand[0] == ls.name:
+        lsCMD()
 
     else:
         print("Command not recognised.")
