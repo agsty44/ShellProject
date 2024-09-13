@@ -22,6 +22,7 @@ make = OOPcommand("make", 2)
 cat = OOPcommand("cat", 2)
 cd = OOPcommand("cd", 3)
 ls = OOPcommand("ls", 1)
+script = OOPcommand("script", 2)
 
 # keep these handy
 #
@@ -42,7 +43,6 @@ def getCommand():
     #this displays the last bit of code and gets the input of the user
     command = input(displayedUserEnvironment)
 
-
 #splits the input, now we can look at it bit by bit
 def parse():
     global command
@@ -57,7 +57,6 @@ def parse():
         fileReference = filePath + splitCommand[1]
     except IndexError:
         fileReference = filePath
-
 
 #this command will let you print text!
 #its a bit useless, but will be better when i add the scripting feature (linebyline)
@@ -93,7 +92,6 @@ def makeCMD():
     f = open(splitCommand[1], "w")
     f.close()
 
-
 #dump file contents, this doesnt have any security so we pray to god it doesnt screw up
 def catCMD():
     #validity check
@@ -110,7 +108,7 @@ def catCMD():
     print(f.read())
     f.close()
 
-
+#change the current directory
 def cdCMD():
     global filePath
 
@@ -128,7 +126,7 @@ def cdCMD():
             return 1
 
         #if it exists, we can change the working directory to the new path
-        filePath = filePath + "/" + splitCommand[1]
+        filePath = filePath + "\"" + splitCommand[1]
 
     elif splitCommand[2] == "absolute":
 
@@ -143,11 +141,32 @@ def cdCMD():
         print("File path must be defined as \"relative\" or \"absolute\".")
         return 1
 
+#list all sub dirs and files in the CWD
 def lsCMD():
     global subDirectories
 
-    subDirectories = os.listdir(filePath)
+    #TODO: fix the ls only getting shit from the directory i ran the file from
+    #the os.listdir is currently retrieving the directories from where the script is run
+    subDirectories = os.listdir(path = filePath)
     print((", ").join(subDirectories))
+    subDirectories = []
+
+#run a script line by line using commands from the script language
+#file extension is PythonShell Instant Scripting Solution, or .piss
+def scriptCMD():
+    global command
+
+    #validity check
+    if len(splitCommand) < script.arguments:
+        print("Syntax Error: command \"script\" must take 1 argument (script name)")
+        return 1
+    
+    f = open(splitCommand[1], "r")
+
+    for i in f:
+        command = i
+        parse()
+        interpret()
 
 #we will use this to call a function depending on the command
 def interpret():
@@ -171,6 +190,9 @@ def interpret():
 
     elif splitCommand[0] == ls.name:
         lsCMD()
+
+    elif splitCommand[0] == script.name:
+        scriptCMD()
 
     else:
         print("Command not recognised.")
