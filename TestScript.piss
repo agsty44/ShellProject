@@ -1,0 +1,3 @@
+echo Hello World!
+ls
+make TextFileForScriptTest.txt
