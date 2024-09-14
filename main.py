@@ -29,6 +29,8 @@ script = OOPcommand("script", 2)
 # global command
 # global splitCommand
 
+# RUNTIME FUNCTIONS HERE
+
 #this takes the command input
 def getCommand():
     global command
@@ -58,6 +60,8 @@ def parse():
     except IndexError:
         fileReference = filePath
 
+# COMMAND FUNCTIONS HERE
+
 #this command will let you print text!
 #its a bit useless, but will be better when i add the scripting feature (linebyline)
 def echoCMD():
@@ -75,11 +79,9 @@ def echoCMD():
     print(shellOut)
     return 0
 
-
 #this is a bit obvious, no?
 def quitCMD():
     exit()
-
 
 #this will make a file
 def makeCMD():
@@ -163,15 +165,26 @@ def scriptCMD():
     
     f = open(splitCommand[1], "r")
 
+    #runs parse() and interpret() for each line of the script file
     for i in f:
         command = i
         parse()
         interpret()
 
+    f.close()
+
+# MAIN LOOP HERE
+
 #we will use this to call a function depending on the command
 def interpret():
     global command
     global splitCommand
+
+    try:
+        splitCommand[0]
+    except IndexError:
+        print("Command not recognised.")
+        return 1
 
     if splitCommand[0] == echo.name:
         echoCMD()
